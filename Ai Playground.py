@@ -38,6 +38,7 @@ class Card:
 
 class Blackjack:
     def __init__(self):
+        self.player_chips = 100
         self.deck = self.create_deck()
 
     def create_deck(self):
@@ -67,31 +68,63 @@ class Blackjack:
         for card in hand:
             print(card)
 
+    def place_bet(self):
+        while True:
+            try:
+                bet = int(input(f"Place your bet (you have {self.player_chips} chips): "))
+                if bet < 1 or bet > self.player_chips:
+                    raise ValueError
+                break
+            except ValueError:
+                print("Invalid bet amount. Please enter a valid number.")
+
+        return bet
+
     def play_round(self):
-        print("Welcome to Blackjack!")
+        print("\nWelcome to Blackjack!")
+        bet = self.place_bet()
+
         player_hand = [self.deck.pop(), self.deck.pop()]
         dealer_hand = [self.deck.pop(), self.deck.pop()]
 
-        print("Dealer's Hand:")
+        print("\nDealer's Hand:")
         print(dealer_hand[0])
-        print("Player's Hand:")
+        print("\nPlayer's Hand:")
         self.print_hand(player_hand)
 
+        if self.calculate_hand_value(player_hand) == 21:
+            print("Blackjack! You win!")
+            self.player_chips += 1.5 * bet
+            return
+
         while True:
-            action = input("Do you want to hit or stand? (h/s): ").lower()
+            action = input("Do you want to hit, stand, double down, or split? (h/s/d/p): ").lower()
             if action == 'h':
                 player_hand.append(self.deck.pop())
-                print("Player's Hand:")
+                print("\nPlayer's Hand:")
                 self.print_hand(player_hand)
                 if self.calculate_hand_value(player_hand) > 21:
                     print("You busted! Dealer wins.")
+                    self.player_chips -= bet
                     return
             elif action == 's':
                 break
+            elif action == 'd':
+                bet *= 2
+                player_hand.append(self.deck.pop())
+                print("\nPlayer's Hand:")
+                self.print_hand(player_hand)
+                if self.calculate_hand_value(player_hand) > 21:
+                    print("You busted! Dealer wins.")
+                    self.player_chips -= bet
+                    return
+                break
+            elif action == 'p':
+                print("Splitting is not implemented yet. Please choose another action.")
             else:
-                print("Invalid input! Please enter 'h' or 's'.")
+                print("Invalid input! Please enter 'h', 's', 'd', or 'p'.")
 
-        print("Dealer's Hand:")
+        print("\nDealer's Hand:")
         self.print_hand(dealer_hand)
         while self.calculate_hand_value(dealer_hand) < 17:
             dealer_hand.append(self.deck.pop())
@@ -102,20 +135,23 @@ class Blackjack:
         dealer_value = self.calculate_hand_value(dealer_hand)
 
         if dealer_value > 21:
-            print("Dealer busted! You win.")
+            print("Dealer busted! You win!")
+            self.player_chips += bet
         elif dealer_value > player_value:
             print("Dealer wins.")
+            self.player_chips -= bet
         elif dealer_value < player_value:
             print("You win!")
+            self.player_chips += bet
         else:
             print("It's a tie!")
 
     def play(self):
-        while True:
+        while self.player_chips > 0:
             self.play_round()
-            if input("Do you want to play another round? (y/n): ").lower() != 'y':
-                print("Thanks for playing!")
+            if input("\nDo you want to play another round? (y/n): ").lower() != 'y':
                 break
+        print(f"\nYou finished the game with {self.player_chips} chips. Thanks for playing!")
 
 if __name__ == "__main__":
     game = Blackjack()
