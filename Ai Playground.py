@@ -3,3 +3,86 @@
 # Program: AI Playground
 
 print("This will be a place for me to play with programming using AI technology ")
+
+import random
+
+
+def create_deck():
+    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    suits = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+    deck = [{'rank': rank, 'suit': suit} for rank in ranks for suit in suits]
+    random.shuffle(deck)
+    return deck
+
+
+def get_card_value(card):
+    if card['rank'] in ['J', 'Q', 'K']:
+        return 10
+    elif card['rank'] == 'A':
+        return 11
+    else:
+        return int(card['rank'])
+
+
+def calculate_hand_value(hand):
+    value = sum(get_card_value(card) for card in hand)
+    num_aces = sum(1 for card in hand if card['rank'] == 'A')
+    while value > 21 and num_aces > 0:
+        value -= 10
+        num_aces -= 1
+    return value
+
+
+def print_hand(hand):
+    for card in hand:
+        print(f"{card['rank']} of {card['suit']}")
+
+
+def blackjack():
+    print("Welcome to Blackjack!")
+    deck = create_deck()
+    player_hand = [deck.pop(), deck.pop()]
+    dealer_hand = [deck.pop(), deck.pop()]
+
+    print("Dealer's Hand:")
+    print(dealer_hand[0])
+    print("Player's Hand:")
+    print_hand(player_hand)
+
+    player_value = calculate_hand_value(player_hand)
+    while player_value < 21:
+        action = input("Do you want to hit or stand? (h/s): ").lower()
+        if action == 'h':
+            player_hand.append(deck.pop())
+            print("Player's Hand:")
+            print_hand(player_hand)
+            player_value = calculate_hand_value(player_hand)
+        elif action == 's':
+            break
+        else:
+            print("Invalid input! Please enter 'h' or 's'.")
+
+    if player_value > 21:
+        print("You busted! Dealer wins.")
+        return
+
+    print("Dealer's Hand:")
+    print_hand(dealer_hand)
+    while calculate_hand_value(dealer_hand) < 17:
+        dealer_hand.append(deck.pop())
+        print("Dealer draws a card...")
+        print_hand(dealer_hand)
+
+    dealer_value = calculate_hand_value(dealer_hand)
+    if dealer_value > 21:
+        print("Dealer busted! You win.")
+    elif dealer_value > player_value:
+        print("Dealer wins.")
+    elif dealer_value < player_value:
+        print("You win!")
+    else:
+        print("It's a tie!")
+
+
+if __name__ == "__main__":
+    blackjack()
