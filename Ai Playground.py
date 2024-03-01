@@ -36,77 +36,87 @@ class Card:
     def __str__(self):
         return f"{self.rank.value} of {self.suit.value}"
 
-def create_deck():
-    ranks = list(Rank)
-    suits = list(Suit)
-    deck = [Card(rank, suit) for rank in ranks for suit in suits]
-    random.shuffle(deck)
-    return deck
+class Blackjack:
+    def __init__(self):
+        self.deck = self.create_deck()
 
-def get_card_value(card):
-    if card.rank in [Rank.JACK, Rank.QUEEN, Rank.KING]:
-        return 10
-    elif card.rank == Rank.ACE:
-        return 11
-    else:
-        return int(card.rank.value)
+    def create_deck(self):
+        ranks = list(Rank)
+        suits = list(Suit)
+        deck = [Card(rank, suit) for rank in ranks for suit in suits]
+        random.shuffle(deck)
+        return deck
 
-def calculate_hand_value(hand):
-    value = sum(get_card_value(card) for card in hand)
-    num_aces = sum(1 for card in hand if card.rank == Rank.ACE)
-    while value > 21 and num_aces > 0:
-        value -= 10
-        num_aces -= 1
-    return value
-
-def print_hand(hand):
-    for card in hand:
-        print(card)
-
-def blackjack():
-    print("Welcome to Blackjack!")
-    deck = create_deck()
-    player_hand = [deck.pop(), deck.pop()]
-    dealer_hand = [deck.pop(), deck.pop()]
-
-    print("Dealer's Hand:")
-    print(dealer_hand[0])
-    print("Player's Hand:")
-    print_hand(player_hand)
-
-    player_value = calculate_hand_value(player_hand)
-    while player_value < 21:
-        action = input("Do you want to hit or stand? (h/s): ").lower()
-        if action == 'h':
-            player_hand.append(deck.pop())
-            print("Player's Hand:")
-            print_hand(player_hand)
-            player_value = calculate_hand_value(player_hand)
-        elif action == 's':
-            break
+    def get_card_value(self, card):
+        if card.rank in [Rank.JACK, Rank.QUEEN, Rank.KING]:
+            return 10
+        elif card.rank == Rank.ACE:
+            return 11
         else:
-            print("Invalid input! Please enter 'h' or 's'.")
+            return int(card.rank.value)
 
-    if player_value > 21:
-        print("You busted! Dealer wins.")
-        return
+    def calculate_hand_value(self, hand):
+        value = sum(self.get_card_value(card) for card in hand)
+        num_aces = sum(1 for card in hand if card.rank == Rank.ACE)
+        while value > 21 and num_aces > 0:
+            value -= 10
+            num_aces -= 1
+        return value
 
-    print("Dealer's Hand:")
-    print_hand(dealer_hand)
-    while calculate_hand_value(dealer_hand) < 17:
-        dealer_hand.append(deck.pop())
-        print("Dealer draws a card...")
-        print_hand(dealer_hand)
+    def print_hand(self, hand):
+        for card in hand:
+            print(card)
 
-    dealer_value = calculate_hand_value(dealer_hand)
-    if dealer_value > 21:
-        print("Dealer busted! You win.")
-    elif dealer_value > player_value:
-        print("Dealer wins.")
-    elif dealer_value < player_value:
-        print("You win!")
-    else:
-        print("It's a tie!")
+    def play_round(self):
+        print("Welcome to Blackjack!")
+        player_hand = [self.deck.pop(), self.deck.pop()]
+        dealer_hand = [self.deck.pop(), self.deck.pop()]
+
+        print("Dealer's Hand:")
+        print(dealer_hand[0])
+        print("Player's Hand:")
+        self.print_hand(player_hand)
+
+        while True:
+            action = input("Do you want to hit or stand? (h/s): ").lower()
+            if action == 'h':
+                player_hand.append(self.deck.pop())
+                print("Player's Hand:")
+                self.print_hand(player_hand)
+                if self.calculate_hand_value(player_hand) > 21:
+                    print("You busted! Dealer wins.")
+                    return
+            elif action == 's':
+                break
+            else:
+                print("Invalid input! Please enter 'h' or 's'.")
+
+        print("Dealer's Hand:")
+        self.print_hand(dealer_hand)
+        while self.calculate_hand_value(dealer_hand) < 17:
+            dealer_hand.append(self.deck.pop())
+            print("Dealer draws a card...")
+            self.print_hand(dealer_hand)
+
+        player_value = self.calculate_hand_value(player_hand)
+        dealer_value = self.calculate_hand_value(dealer_hand)
+
+        if dealer_value > 21:
+            print("Dealer busted! You win.")
+        elif dealer_value > player_value:
+            print("Dealer wins.")
+        elif dealer_value < player_value:
+            print("You win!")
+        else:
+            print("It's a tie!")
+
+    def play(self):
+        while True:
+            self.play_round()
+            if input("Do you want to play another round? (y/n): ").lower() != 'y':
+                print("Thanks for playing!")
+                break
 
 if __name__ == "__main__":
-    blackjack()
+    game = Blackjack()
+    game.play()
